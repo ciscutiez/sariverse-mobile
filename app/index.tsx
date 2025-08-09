@@ -94,7 +94,7 @@ function ListEmptyComponent() {
           onPress={() => Linking.openURL('https://nativewindui.com')}
           variant="subhead"
           className="text-primary">
-          NativeWindUI
+          NativeWindUIs
         </Text>
         {' website.'}
       </Text>
