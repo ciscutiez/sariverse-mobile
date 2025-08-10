@@ -1,13 +1,15 @@
 import { View, ScrollView, RefreshControl } from 'react-native';
 import { useState } from 'react';
 import { Link } from 'expo-router';
-import { Icon } from '@roninoss/icons';
+
 import { Text } from '~/components/nativewindui/Text';
 import { useGetInventory } from '~/hooks/inventory';
 import { useColorScheme } from '~/lib/useColorScheme';
 import { Button } from '~/components/nativewindui/Button';
 import { ProgressIndicator } from '~/components/nativewindui/ProgressIndicator';
 import type { Inventory } from '~/types/database';
+import { Edit, Package, AlertTriangle, XOctagon, Plus, CheckCircle, XCircle } from 'lucide-react-native';
+
 
 export default function InventoryScreen() {
   const { colors } = useColorScheme();
@@ -35,32 +37,32 @@ export default function InventoryScreen() {
         <View className="p-4 space-y-6">
           {/* Inventory Statistics */}
           <View className="flex-row gap-4">
-            <InventoryStatCard
-              icon="package"
-              label="In Stock"
-              value={inStockItems.length.toString()}
-              variant="default"
-            />
-            <InventoryStatCard
-              icon="alert-triangle"
-              label="Low Stock"
-              value={lowStockItems.length.toString()}
-              variant="warning"
-            />
-            <InventoryStatCard
-              icon="x-octagon"
-              label="Out of Stock"
-              value={outOfStockItems.length.toString()}
-              variant="danger"
-            />
+  <InventoryStatCard
+    icon={Package}
+    label="In Stock"
+    value={inStockItems.length.toString()}
+    variant="default"
+  />
+  <InventoryStatCard
+    icon={AlertTriangle}
+    label="Low Stock"
+    value={lowStockItems.length.toString()}
+    variant="warning"
+  />
+  <InventoryStatCard
+    icon={XOctagon}
+    label="Out of Stock"
+    value={outOfStockItems.length.toString()}
+    variant="danger"
+  />
           </View>
 
           {/* Quick Actions */}
           <View className="flex-row justify-between items-center">
             <Text variant="title3">Inventory</Text>
-            <Link href="/inventory/add" asChild>
+            <Link href={"/inventory/add" as any} asChild>
               <Button variant="primary" size="sm">
-                <Icon name="plus" size={16} color="white" />
+                <Plus  size={16} color="white" />
                 <Text className="text-white">Add Item</Text>
               </Button>
             </Link>
@@ -69,7 +71,7 @@ export default function InventoryScreen() {
           {/* Inventory List */}
           <View className="space-y-4">
             {inventory?.map((item) => (
-              <Link key={item.id} href={`/inventory/${item.id}`} asChild>
+              <Link key={item.id} href={`/inventory/${item.id}` as any} asChild>
                 <InventoryItemCard item={item} />
               </Link>
             ))}
@@ -81,12 +83,12 @@ export default function InventoryScreen() {
 }
 
 function InventoryStatCard({ 
-  icon, 
+  icon: IconComponent, 
   label, 
   value, 
   variant = 'default' 
 }: { 
-  icon: string; 
+  icon: React.ElementType; 
   label: string; 
   value: string; 
   variant?: 'default' | 'warning' | 'danger';
@@ -105,7 +107,7 @@ function InventoryStatCard({
         style={{ backgroundColor: `${variantColors[variant]}20` }}
         className="w-8 h-8 rounded-full items-center justify-center"
       >
-        <Icon name={icon} size={16} color={variantColors[variant]} />
+        <IconComponent size={16} color={variantColors[variant]} />
       </View>
       <View>
         <Text variant="title3">{value}</Text>
@@ -114,6 +116,7 @@ function InventoryStatCard({
     </View>
   );
 }
+
 
 function InventoryItemCard({ item }: { item: Inventory }) {
   const { colors } = useColorScheme();
@@ -124,12 +127,12 @@ function InventoryItemCard({ item }: { item: Inventory }) {
     out_of_stock: '#ef4444'
   };
 
-  const statusIcon = {
-    in_stock: 'check-circle',
-    low_stock: 'alert-triangle',
-    out_of_stock: 'x-circle'
-  };
-
+const statusIcon = {
+  in_stock: CheckCircle,
+  low_stock: AlertTriangle,
+  out_of_stock: XCircle
+};
+const StatusIconComponent = statusIcon[item.status];
   return (
     <View className="bg-card p-4 rounded-xl space-y-3">
       <View className="flex-row items-center justify-between">
@@ -138,7 +141,7 @@ function InventoryItemCard({ item }: { item: Inventory }) {
           style={{ backgroundColor: `${statusColors[item.status]}20` }}
           className="py-1 px-3 rounded-full flex-row items-center gap-1"
         >
-          <Icon name={statusIcon[item.status]} size={12} color={statusColors[item.status]} />
+        <StatusIconComponent size={12} color={statusColors[item.status]} />
           <Text style={{ color: statusColors[item.status] }}>
             {item.status.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}
           </Text>
@@ -168,7 +171,7 @@ function InventoryItemCard({ item }: { item: Inventory }) {
         </Text>
         <Button variant="secondary" size="sm">
           <Text>Update Stock</Text>
-          <Icon name="edit" size={16} color={colors.primary} />
+          <Edit size={16} color={colors.primary} />
         </Button>
       </View>
     </View>

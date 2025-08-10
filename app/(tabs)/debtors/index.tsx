@@ -1,7 +1,7 @@
 import { View, ScrollView, RefreshControl } from 'react-native';
 import { useState } from 'react';
 import { Link } from 'expo-router';
-import { Icon } from '@roninoss/icons';
+import { User, CheckCircle, DollarSign, Plus } from "lucide-react-native";
 import { Text } from '~/components/nativewindui/Text';
 import { useGetDebtors } from '~/hooks/debtor';
 import { useGetTransactions } from '~/hooks/transaction';
@@ -38,19 +38,19 @@ export default function DebtorsScreen() {
           {/* Debt Statistics */}
           <View className="flex-row gap-4">
             <DebtorStatCard
-              icon="user"
+               icon={User}
               label="Active"
               value={activeDebtors.length.toString()}
               variant="warning"
             />
             <DebtorStatCard
-              icon="check-circle"
+           icon={CheckCircle}
               label="Settled"
               value={settledDebtors.length.toString()}
               variant="default"
             />
             <DebtorStatCard
-              icon="dollar-sign"
+             icon={DollarSign}
               label="Total Debt"
               value={`₱${totalDebt.toFixed(2)}`}
               variant="danger"
@@ -60,9 +60,9 @@ export default function DebtorsScreen() {
           {/* Quick Actions */}
           <View className="flex-row justify-between items-center">
             <Text variant="title3">Debtors</Text>
-            <Link href="/debtors/add" asChild>
+            <Link href={"/debtors/add" as any} asChild>
               <Button variant="primary" size="sm">
-                <Icon name="plus" size={16} color="white" />
+                <Plus size={16} color="white" />
                 <Text className="text-white">Add Debtor</Text>
               </Button>
             </Link>
@@ -97,12 +97,12 @@ export default function DebtorsScreen() {
 }
 
 function DebtorStatCard({ 
-  icon, 
+  icon: IconComponent,
   label, 
   value, 
   variant = 'default' 
 }: { 
-  icon: string; 
+ icon: React.ElementType;
   label: string; 
   value: string; 
   variant?: 'default' | 'warning' | 'danger';
@@ -121,7 +121,7 @@ function DebtorStatCard({
         style={{ backgroundColor: `${variantColors[variant]}20` }}
         className="w-8 h-8 rounded-full items-center justify-center"
       >
-        <Icon name={icon} size={16} color={variantColors[variant]} />
+       <IconComponent size={16} color={variantColors[variant]} />
       </View>
       <View>
         <Text variant="title3">{value}</Text>
@@ -158,19 +158,26 @@ function DebtorCard({ debtor }: { debtor: Debtor }) {
     'due-soon': '#f59e0b',
     overdue: '#ef4444',
     settled: '#10b981'
-  };
-
+  } as const;
+const statusColor =
+  statusColors[debtor.status as keyof typeof statusColors] ?? colors.primary;
   const progress = (debtor.balance / debtor.credit_limit) * 100;
-
+const lastPaymentDate = debtor.payment_history?.length
+  ? new Date(
+      debtor.payment_history
+        .map((p: { date: string }) => new Date(p.date))
+        .sort((a, b) => b.getTime() - a.getTime())[0]
+    ).toLocaleDateString()
+  : 'No payments yet';
   return (
     <View className="bg-card p-4 rounded-xl space-y-3">
       <View className="flex-row items-center justify-between">
         <Text variant="heading">{debtor.name}</Text>
         <View 
-          style={{ backgroundColor: statusColors[debtor.status]+'20' }}
+        style={{ backgroundColor: statusColor + '20' }}
           className="py-1 px-3 rounded-full flex-row items-center gap-1"
         >
-          <Text style={{ color: statusColors[debtor.status] }}>
+          <Text style={{ color: statusColor }}>
             {debtor.status.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}
           </Text>
         </View>
@@ -200,11 +207,11 @@ function DebtorCard({ debtor }: { debtor: Debtor }) {
 
       <View className="flex-row justify-between items-center">
         <Text variant="footnote" color="tertiary">
-          Last payment: {debtor.last_payment_date ? new Date(debtor.last_payment_date).toLocaleDateString() : 'No payments yet'}
+          Last payment: {lastPaymentDate}
         </Text>
         <Button variant="secondary" size="sm">
           <Text>Record Payment</Text>
-          <Icon name="dollar-sign" size={16} color={colors.primary} />
+          <DollarSign  size={16} color={colors.primary} />
         </Button>
       </View>
     </View>

@@ -5,7 +5,9 @@ import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Text } from '~/components/nativewindui/Text';
 import { Button } from '~/components/nativewindui/Button';
-import { useSupabase } from '~/lib/supabase';
+import { supabase } from '~/utils/supabase';
+import { TextInput } from 'react-native-gesture-handler';
+
 
 const signUpSchema = z.object({
   email: z.string().email('Invalid email address'),
@@ -22,7 +24,7 @@ export default function SignUpScreen() {
   const { control, handleSubmit } = useForm<SignUpForm>({
     resolver: zodResolver(signUpSchema),
   });
-  const { supabase } = useSupabase();
+
 
   const onSubmit = async (data: SignUpForm) => {
     try {
@@ -60,9 +62,11 @@ export default function SignUpScreen() {
           render={({ field: { onChange, value }, fieldState: { error } }) => (
             <View className="space-y-2">
               <Text>First Name</Text>
-              <View className="border border-gray-300 rounded-lg p-2">
-                <Text onChangeText={onChange} value={value} />
-              </View>
+                <TextInput
+                className="border border-gray-300 rounded-lg p-2"
+                onChangeText={onChange}
+                value={value}
+              />
               {error && <Text className="text-red-500">{error.message}</Text>}
             </View>
           )}
@@ -74,9 +78,11 @@ export default function SignUpScreen() {
           render={({ field: { onChange, value }, fieldState: { error } }) => (
             <View className="space-y-2">
               <Text>Last Name</Text>
-              <View className="border border-gray-300 rounded-lg p-2">
-                <Text onChangeText={onChange} value={value} />
-              </View>
+               <TextInput
+                className="border border-gray-300 rounded-lg p-2"
+                onChangeText={onChange}
+                value={value}
+              />
               {error && <Text className="text-red-500">{error.message}</Text>}
             </View>
           )}
@@ -88,9 +94,11 @@ export default function SignUpScreen() {
           render={({ field: { onChange, value }, fieldState: { error } }) => (
             <View className="space-y-2">
               <Text>Store Name</Text>
-              <View className="border border-gray-300 rounded-lg p-2">
-                <Text onChangeText={onChange} value={value} />
-              </View>
+               <TextInput
+                className="border border-gray-300 rounded-lg p-2"
+                onChangeText={onChange}
+                value={value}
+              />
               {error && <Text className="text-red-500">{error.message}</Text>}
             </View>
           )}
@@ -102,9 +110,14 @@ export default function SignUpScreen() {
           render={({ field: { onChange, value }, fieldState: { error } }) => (
             <View className="space-y-2">
               <Text>Email</Text>
-              <View className="border border-gray-300 rounded-lg p-2">
-                <Text onChangeText={onChange} value={value} />
-              </View>
+                            <TextInput
+                className="border border-gray-300 rounded-lg p-2"
+                onChangeText={onChange}
+                value={value}
+                keyboardType="email-address"
+                autoCapitalize="none"
+              />
+
               {error && <Text className="text-red-500">{error.message}</Text>}
             </View>
           )}
@@ -116,9 +129,12 @@ export default function SignUpScreen() {
           render={({ field: { onChange, value }, fieldState: { error } }) => (
             <View className="space-y-2">
               <Text>Password</Text>
-              <View className="border border-gray-300 rounded-lg p-2">
-                <Text onChangeText={onChange} value={value} secureTextEntry />
-              </View>
+                <TextInput
+                className="border border-gray-300 rounded-lg p-2"
+                onChangeText={onChange}
+                value={value}
+                secureTextEntry
+              />
               {error && <Text className="text-red-500">{error.message}</Text>}
             </View>
           )}

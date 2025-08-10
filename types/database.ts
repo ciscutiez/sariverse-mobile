@@ -47,14 +47,22 @@ export type DebtorProduct = {
   updated_at: string;
 };
 export type Debtor = {
-  id: number;
-  debtor_name: string;
-  email: string | null;
-  phone: string | null;
-  address: string | null;
-  created_at: string;
-  updated_at: string;
-    is_settled?: boolean;
+   id: string; // UUID
+  name: string;
+  email: string;
+  phone: string;
+  due_date: string; // timestamp
+  status: string;
+  payment_history?: any[] | null; // jsonb
+  avatar?: string | null;
+  credit_limit: number;
+  unique_code: string;
+  created_at: string | null;
+  updated_at: string | null;
+  profile_id?: number | null;
+  balance: number;
+  is_settled?: boolean;
+
 };
 
 export type Product = {
