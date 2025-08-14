@@ -1,14 +1,15 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { supabase } from '~/lib/auth';
 import { Profile } from '~/types/database';
-import { supabase } from '~/utils/supabase';
+
 
 
 // Fetch all profiles
 export const useGetProfiles = () =>
-  useQuery<Profile[]>({
+  useQuery<Profile>({
     queryKey: ['profiles'],
     queryFn: async () => {
-      const { data, error } = await supabase.from('profiles').select('*');
+      const { data, error } = await supabase.from('profiles').select('*').single();
       if (error) throw error;
       return data;
     }

@@ -1,73 +1,153 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Order } from '~/types/database';
-import { supabase } from '~/utils/supabase';
+import { supabase } from '~/lib/auth';
+import { Debtor, Order, OrderItem, Product } from '~/types/database';
+import { useGetProfiles } from './profile';
 
-// Fetch all orders
-export const useGetOrders = () =>
-  useQuery<Order[]>({
-    queryKey: ['orders'],
+export type OrderWithRelations = Order & {
+  debtors?: Pick<Debtor, "name" | "phone">
+  order_items: (OrderItem & {
+    products: Pick<Product, "name" | "price">
+  })[]
+}
+
+// Fetch all orders for current profile
+export const useGetOrders = () => {
+  const { data: profile } = useGetProfiles();
+
+  return useQuery<Order[]>({
+    queryKey: ['orders', profile?.id],
     queryFn: async () => {
-      const { data, error } = await supabase.from('orders').select('*');
-      if (error) throw error;
-      return data;
-    }
-  });
+      if (!profile?.id) throw new Error("Profile not found");
 
-// Fetch order by ID
-export const useGetOrderById = (id: number) =>
-  useQuery<Order>({
-    queryKey: ['orders', id],
-    queryFn: async () => {
-      const { data, error } = await supabase.from('orders').select('*').eq('id', id).single();
-      if (error) throw error;
-      return data;
-    }
-  });
-
-// Create order
-export const useCreateOrder = () => {
-  const qc = useQueryClient();
-  return useMutation({
-    // Use Partial<Record<string, any>> to bypass until types are fixed
-    mutationFn: async (payload: Partial<Omit<Order, 'id' | 'created_at' | 'updated_at'>> & {
-      customer_name: string;
-      total_amount: number;
-      status: 'pending' | 'completed' | 'cancelled';
-    }) => {
       const { data, error } = await supabase
         .from('orders')
-        .insert(payload)
-        .select()
-        .single();
+        .select('*')
+        .eq('profile_id', profile.id);
+
       if (error) throw error;
       return data;
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['orders'] })
+    enabled: !!profile?.id,
   });
 };
 
+// Fetch order by ID (only if order belongs to current profile)
+export const useGetOrderById = (id: number) => {
+  const { data: profile } = useGetProfiles();
 
-// Update order
+  return useQuery<OrderWithRelations>({
+    queryKey: ["orders", id, profile?.id],
+    queryFn: async () => {
+      if (!profile?.id) throw new Error("Profile not found");
+
+      const { data, error } = await supabase
+        .from("orders")
+        .select(`
+          *,
+          debtors (name, phone),
+          order_items (
+            *,
+            products (name, price)
+          )
+        `)
+        .eq("id", id)
+        .eq("profile_id", profile.id)
+        .single();
+
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!profile?.id && !!id,
+  });
+};
+
+// Create order associated with current profile
+export const useCreateOrder = () => {
+  const qc = useQueryClient()
+  const { data: profile } = useGetProfiles()
+
+  return useMutation({
+    mutationFn: async (payload: {
+      customer_name: string
+      status: 'pending' | 'completed' | 'cancelled'
+      items: { product_id: number; quantity: number; price: number }[]
+    }) => {
+      if (!profile?.id) throw new Error('Profile not found')
+
+      // 1. Insert into orders (without items)
+      const { data: order, error: orderError } = await supabase
+        .from('orders')
+        .insert({
+          customer_name: payload.customer_name,
+          status: payload.status,
+          profile_id: profile.id,
+        })
+        .select()
+        .single()
+
+      if (orderError) throw orderError
+      if (!order?.id) throw new Error('Order ID missing')
+
+      // 2. Insert order items referencing order.id
+      const orderItemsToInsert = payload.items.map((item) => ({
+        order_id: order.id,
+        product_id: item.product_id,
+        quantity: item.quantity,
+        total_price: item.price * item.quantity,
+        profile_id: profile.id,
+      }))
+
+      const { error: itemsError } = await supabase.from('order_items').insert(orderItemsToInsert)
+
+      if (itemsError) throw itemsError
+
+      return order
+    },
+  onSuccess: () => qc.invalidateQueries({ queryKey: ['orders', profile?.id] })
+  })
+}
+
+// Update order only if it belongs to current profile
 export const useUpdateOrder = () => {
   const qc = useQueryClient();
+  const { data: profile } = useGetProfiles();
+
   return useMutation({
     mutationFn: async ({ id, ...updates }: Partial<Order> & { id: number }) => {
-      const { data, error } = await supabase.from('orders').update(updates).eq('id', id).select().single();
+      if (!profile?.id) throw new Error("Profile not found");
+
+      const { data, error } = await supabase
+        .from('orders')
+        .update(updates)
+        .eq('id', id)
+        .eq('profile_id', profile.id)
+        .select()
+        .single();
+
       if (error) throw error;
       return data;
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['orders'] })
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['orders', profile?.id] }),
   });
 };
 
-// Delete order
+// Delete order only if it belongs to current profile
 export const useDeleteOrder = () => {
   const qc = useQueryClient();
+  const { data: profile } = useGetProfiles();
+
   return useMutation({
     mutationFn: async (id: number) => {
-      const { error } = await supabase.from('orders').delete().eq('id', id);
+      if (!profile?.id) throw new Error("Profile not found");
+
+      const { error } = await supabase
+        .from('orders')
+        .delete()
+        .eq('id', id)
+        .eq('profile_id', profile.id);
+
       if (error) throw error;
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['orders'] })
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['orders', profile?.id] }),
   });
 };

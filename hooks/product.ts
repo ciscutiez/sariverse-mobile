@@ -1,71 +1,91 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Product } from '~/types/database';
-import { supabase } from '~/utils/supabase';
 
 
-// Fetch all products
-export const useGetProducts = () =>
-  useQuery<Product[]>({
-    queryKey: ['products'],
+
+
+import { supabase } from "~/lib/auth"
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
+import { useGetProfiles } from "./profile"
+import { Product, ProductWithInventory } from "~/types/database"
+
+export const useGetProducts = () => {
+  const { data: profile } = useGetProfiles()
+
+  return useQuery<ProductWithInventory[]>({
+    queryKey: ["products", profile?.id],
     queryFn: async () => {
-      const { data, error } = await supabase.from('products').select('*');
-      if (error) throw error;
-      return data;
-    }
-  });
+      if (!profile?.id) throw new Error("Profile not found")
 
-// Fetch product by ID
-export const useGetProductById = (id: number) =>
-  useQuery<Product>({
-    queryKey: ['products', id],
-    queryFn: async () => {
-      const { data, error } = await supabase.from('products').select('*').eq('id', id).single();
-      if (error) throw error;
-      return data;
-    }
-  });
-
-// Create product
-export const useCreateProduct = () => {
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: async (
-      payload: Omit<Product, 'id' | 'created_at' | 'updated_at'>
-    ) => {
       const { data, error } = await supabase
-        .from('products')
-        .insert(payload)
-        .select()
-        .single();
-      if (error) throw error;
-      return data;
+        .from("products")
+        .select(`
+          *,
+          inventory:inventory (srp, stock, sku)
+        `)
+        .eq("profile_id", profile.id)
+
+      if (error) throw error
+      return data
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['products'] }),
-  });
-};
+    enabled: !!profile?.id,
+  })
+}
 
+export const useCreateProduct = () => {
+  const qc = useQueryClient()
+  const { data: profile } = useGetProfiles()
 
-// Update product
+  return useMutation({
+    mutationFn: async (payload: Omit<Product, "id" | "created_at" | "updated_at" | "profile_id">) => {
+      if (!profile?.id) throw new Error("Profile not found")
+
+      const { data, error } = await supabase
+        .from("products")
+        .insert({ ...payload, profile_id: profile.id })
+        .select()
+        .single()
+
+      if (error) throw error
+      return data
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["products"] }),
+  })
+}
+
 export const useUpdateProduct = () => {
-  const qc = useQueryClient();
+  const qc = useQueryClient()
+  const { data: profile } = useGetProfiles()
+
   return useMutation({
     mutationFn: async ({ id, ...updates }: Partial<Product> & { id: number }) => {
-      const { data, error } = await supabase.from('products').update(updates).eq('id', id).select().single();
-      if (error) throw error;
-      return data;
-    },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['products'] })
-  });
-};
+      if (!profile?.id) throw new Error("Profile not found")
 
-// Delete product
+      const { data, error } = await supabase
+        .from("products")
+        .update(updates)
+        .eq("id", id)
+        .eq("profile_id", profile.id)
+        .select()
+        .single()
+
+      if (error) throw error
+      return data
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["products"] }),
+  })
+}
+
 export const useDeleteProduct = () => {
-  const qc = useQueryClient();
+  const qc = useQueryClient()
+  const { data: profile } = useGetProfiles()
+
   return useMutation({
     mutationFn: async (id: number) => {
-      const { error } = await supabase.from('products').delete().eq('id', id);
-      if (error) throw error;
+      if (!profile?.id) throw new Error("Profile not found")
+
+      const { error } = await supabase.from("products").delete().eq("id", id).eq("profile_id", profile.id)
+
+      if (error) throw error
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['products'] })
-  });
-};
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["products"] }),
+  })
+}

@@ -1,16 +1,47 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { supabase } from '~/utils/supabase';
+import { supabase } from '~/lib/auth';
+
 import { DebtorProduct } from '~/types/database';
 
+export async function addProductToDebtor({
+  debtorId,
+  productId,
+  quantity,
+  totalPrice,
+}: {
+  debtorId: string;
+  productId: string;
+  quantity: number;
+  totalPrice: number;
+}) {
+  const { data, error } = await supabase
+    .from('debtor_products')
+    .insert({
+      debtor_id: debtorId,
+      product_id: productId,
+      quantity,
+      total_price: totalPrice,
+    })
+    .select()
+    .single();
+
+  if (error) throw error;
+  return data;
+}
 // Fetch all debtor products
-export const useGetDebtorProducts = () =>
-  useQuery<DebtorProduct[]>({
-    queryKey: ['debtor_products'],
+export const useGetDebtorProducts = (debtorId: string) =>
+  useQuery({
+    queryKey: ['debtor_products', debtorId],
     queryFn: async () => {
-      const { data, error } = await supabase.from('debtor_products').select('*');
+      const { data, error } = await supabase
+        .from('debtor_products_view')
+        .select('*')
+        .eq('debtor_id', debtorId)
+        .order('created_at', { ascending: false });
+
       if (error) throw error;
-      return data;
-    }
+      return data || [];
+    },
   });
 
 // Fetch debtor product by ID
@@ -18,46 +49,110 @@ export const useGetDebtorProductById = (id: number) =>
   useQuery<DebtorProduct>({
     queryKey: ['debtor_products', id],
     queryFn: async () => {
-      const { data, error } = await supabase.from('debtor_products').select('*').eq('id', id).single();
-      if (error) throw error;
-      return data;
-    }
-  });
-
-// Create debtor product
-export const useCreateDebtorProduct = () => {
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: async (payload: Omit<DebtorProduct, 'id' | 'created_at' | 'updated_at'>) => {
-      const { data, error } = await supabase.from('debtor_products').insert(payload).select().single();
+      const { data, error } = await supabase
+        .from('debtor_products')
+        .select('*')
+        .eq('id', id)
+        .single();
       if (error) throw error;
       return data;
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['debtor_products'] })
+  });
+export const useAddProductToDebtor = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({
+      debtorId,
+      productId,
+      quantity,
+      totalPrice,
+    }: {
+      debtorId: string;
+      productId: string;
+      quantity: number;
+      totalPrice: number;
+    }) => {
+      const { data: result, error: rpcError } = await supabase.rpc('add_product_to_debtor', {
+        p_debtor_id: debtorId,
+        p_product_id: productId,
+        p_quantity: quantity,
+        p_total_price: totalPrice,
+      });
+      if (rpcError) throw rpcError;
+
+      // Fetch the newly added product from the view
+      const { data: newProduct, error: fetchError } = await supabase
+        .from('debtor_products_view')
+        .select('*')
+        .eq('id', result.id)
+        .single();
+      if (fetchError) throw fetchError;
+
+      return newProduct;
+    },
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['debtor-products', variables.debtorId] });
+      queryClient.invalidateQueries({ queryKey: ['inventory'] });
+      queryClient.invalidateQueries({ queryKey: ['debtors'] });
+    },
   });
 };
 
-// Update debtor product
+// --------------------
+// Update debtor product via RPC
+// --------------------
 export const useUpdateDebtorProduct = () => {
-  const qc = useQueryClient();
+  const queryClient = useQueryClient();
+
   return useMutation({
-    mutationFn: async ({ id, ...updates }: Partial<DebtorProduct> & { id: number }) => {
-      const { data, error } = await supabase.from('debtor_products').update(updates).eq('id', id).select().single();
-      if (error) throw error;
-      return data;
+    mutationFn: async ({
+      id,
+      debtorId,
+      quantity,
+      totalPrice,
+    }: {
+      id: number;
+      debtorId: string;
+      quantity?: number;
+      totalPrice?: number;
+    }) => {
+      const { error: rpcError } = await supabase.rpc('update_debtor_product', {
+        p_id: id,
+        p_quantity: quantity,
+        p_total_price: totalPrice,
+      });
+      if (rpcError) throw rpcError;
+
+      const { data: updatedProduct, error: fetchError } = await supabase
+        .from('debtor_products_view')
+        .select('*')
+        .eq('id', id)
+        .single();
+      if (fetchError) throw fetchError;
+
+      return updatedProduct;
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['debtor_products'] })
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['debtor-products', variables.debtorId] });
+    },
   });
 };
 
-// Delete debtor product
+// --------------------
+// Delete debtor product via RPC
+// --------------------
 export const useDeleteDebtorProduct = () => {
-  const qc = useQueryClient();
+  const queryClient = useQueryClient();
+
   return useMutation({
-    mutationFn: async (id: number) => {
-      const { error } = await supabase.from('debtor_products').delete().eq('id', id);
-      if (error) throw error;
+    mutationFn: async ({ id, debtorId }: { id: number; debtorId: string }) => {
+      const { error: rpcError } = await supabase.rpc('remove_product_from_debtor', { p_id: id });
+      if (rpcError) throw rpcError;
+      return { success: true };
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['debtor_products'] })
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['debtor-products', variables.debtorId] });
+    },
   });
 };

@@ -1,7 +1,7 @@
 import { Stack } from 'expo-router';
 import { useColorScheme } from '~/lib/useColorScheme';
 
-export default function InventoryLayout() {
+export default function OrdersLayout() {
   const { colors } = useColorScheme();
 
   return (
@@ -12,22 +12,25 @@ export default function InventoryLayout() {
         },
         headerTintColor: colors.foreground,
         headerShadowVisible: false,
-      }}
-    >
+      }}>
       <Stack.Screen
         name="index"
         options={{
-          title: 'Manage your inventory',
-          headerShown: false
+          title: 'Orders',
+          headerShown: false,
         }}
       />
-    
-  
-       <Stack.Screen
-        name="update"
+      <Stack.Screen
+        name="new"
+        options={{
+          title: 'New Order',
+          headerShown: false,
+        }}
+      />
+      <Stack.Screen
+        name="[id]/index"
         options={{
           headerShown: false,
-          title: 'Your Products',
         }}
       />
     </Stack>

@@ -30,16 +30,7 @@ export default function TabsLayout() {
           ),
         }}
       />
-      <Tabs.Screen
-        name="orders"
-        options={{
-          title: 'Orders',
-          tabBarIcon: ({ color, size }) => (
-            <Receipt size={size} color={color} />
-          ),
-          headerShown: false,
-        }}
-      />
+      
       <Tabs.Screen
         name="products"
         options={{
@@ -66,6 +57,16 @@ export default function TabsLayout() {
           title: 'Debtors',
           tabBarIcon: ({ color, size }) => (
             <CreditCard size={size} color={color} />
+          ),
+          headerShown: false,
+        }}
+      />
+      <Tabs.Screen
+        name="orders"
+        options={{
+          title: 'Orders',
+          tabBarIcon: ({ color, size }) => (
+            <Receipt size={size} color={color} />
           ),
           headerShown: false,
         }}

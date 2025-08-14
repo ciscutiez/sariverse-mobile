@@ -1,179 +1,209 @@
-import { View, ScrollView, RefreshControl } from 'react-native';
-import { useState } from 'react';
-import { Link } from 'expo-router';
+"use client"
 
-import { Text } from '~/components/nativewindui/Text';
-import { useGetInventory } from '~/hooks/inventory';
-import { useColorScheme } from '~/lib/useColorScheme';
-import { Button } from '~/components/nativewindui/Button';
-import { ProgressIndicator } from '~/components/nativewindui/ProgressIndicator';
-import type { Inventory } from '~/types/database';
-import { Edit, Package, AlertTriangle, XOctagon, Plus, CheckCircle, XCircle } from 'lucide-react-native';
+import { View, ScrollView, RefreshControl, Pressable } from "react-native"
+import { useState } from "react"
+import { Link } from "expo-router"
+import { LinearGradient } from "expo-linear-gradient"
 
+import { Text } from "~/components/nativewindui/Text"
+import { useGetInventory } from "~/hooks/inventory"
+
+import type { Inventory } from "~/types/database"
+import { Edit, Package, AlertTriangle, CheckCircle, XCircle, TrendingUp } from "lucide-react-native"
 
 export default function InventoryScreen() {
-  const { colors } = useColorScheme();
-  const [refreshing, setRefreshing] = useState(false);
-  const { data: inventory, refetch } = useGetInventory();
+
+  const [refreshing, setRefreshing] = useState(false)
+  const { data: inventory, refetch } = useGetInventory()
 
   const onRefresh = async () => {
-    setRefreshing(true);
-    await refetch();
-    setRefreshing(false);
-  };
+    setRefreshing(true)
+    await refetch()
+    setRefreshing(false)
+  }
 
-  const lowStockItems = inventory?.filter(item => item.status === 'low_stock') || [];
-  const outOfStockItems = inventory?.filter(item => item.status === 'out_of_stock') || [];
-  const inStockItems = inventory?.filter(item => item.status === 'in_stock') || [];
+  const lowStockItems = inventory?.filter((item) => item.status === "low_stock") || []
+  const outOfStockItems = inventory?.filter((item) => item.status === "out_of_stock") || []
+  const inStockItems = inventory?.filter((item) => item.status === "in_stock") || []
+  const totalValue = inventory?.reduce((sum, item) => sum + (item.srp || 0) * item.stock, 0) || 0
 
   return (
-    <View className="flex-1 bg-background">
-      <ScrollView
-        className="flex-1"
-        refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-        }
+    <View className="flex-1 bg-gray-50">
+      {/* Header */}
+      <LinearGradient
+        colors={["#8B5CF6", "#A855F7", "#C084FC"]}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        className="px-6 pt-16 pb-8"
       >
-        <View className="p-4 space-y-6">
-          {/* Inventory Statistics */}
-          <View className="flex-row gap-4">
-  <InventoryStatCard
-    icon={Package}
-    label="In Stock"
-    value={inStockItems.length.toString()}
-    variant="default"
-  />
-  <InventoryStatCard
-    icon={AlertTriangle}
-    label="Low Stock"
-    value={lowStockItems.length.toString()}
-    variant="warning"
-  />
-  <InventoryStatCard
-    icon={XOctagon}
-    label="Out of Stock"
-    value={outOfStockItems.length.toString()}
-    variant="danger"
-  />
+        <View className="flex-row items-center justify-between mb-6">
+          <View>
+            <Text className="text-white text-2xl font-bold">Inventory</Text>
+            <Text className="text-purple-100 text-sm">Manage your stock levels</Text>
           </View>
-
-          {/* Quick Actions */}
-          <View className="flex-row justify-between items-center">
-            <Text variant="title3">Inventory</Text>
-            <Link href={"/inventory/add" as any} asChild>
-              <Button variant="primary" size="sm">
-                <Plus  size={16} color="white" />
-                <Text className="text-white">Add Item</Text>
-              </Button>
-            </Link>
+          <View className="bg-white/20 rounded-full p-3">
+            <Package size={24} color="white" />
           </View>
+        </View>
 
-          {/* Inventory List */}
-          <View className="space-y-4">
-            {inventory?.map((item) => (
-              <Link key={item.id} href={`/inventory/${item.id}` as any} asChild>
-                <InventoryItemCard item={item} />
-              </Link>
-            ))}
+        <View className="bg-white/10 rounded-2xl p-4 backdrop-blur-sm">
+          <View className="flex-row items-center gap-2 mb-2">
+            <TrendingUp size={16} color="white" />
+            <Text className="text-white font-semibold">Total Inventory Value</Text>
+          </View>
+          <Text className="text-white text-3xl font-bold">₱{totalValue.toLocaleString()}</Text>
+        </View>
+      </LinearGradient>
+
+      {/* Body */}
+      <ScrollView
+        className="-mt-4 flex-1"
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+      >
+        <View className="min-h-full rounded-t-3xl bg-white">
+          <View className="space-y-6 gap-4 p-6">
+            {/* Stats */}
+            <View className="flex-row gap-3">
+              <View className="flex-1 bg-green-50 p-4 rounded-2xl border border-green-100">
+                <View className="items-center space-y-1">
+                  <CheckCircle size={20} color="#10b981" />
+                  <Text className="text-green-600 text-2xl font-bold">{inStockItems.length}</Text>
+                  <Text className="text-green-600 text-xs font-medium">In Stock</Text>
+                </View>
+              </View>
+              <View className="flex-1 bg-yellow-50 p-4 rounded-2xl border border-yellow-100">
+                <View className="items-center space-y-1">
+                  <AlertTriangle size={20} color="#f59e0b" />
+                  <Text className="text-yellow-600 text-2xl font-bold">{lowStockItems.length}</Text>
+                  <Text className="text-yellow-600 text-xs font-medium">Low Stock</Text>
+                </View>
+              </View>
+              <View className="flex-1 bg-red-50 p-4 rounded-2xl border border-red-100">
+                <View className="items-center space-y-1">
+                  <XCircle size={20} color="#ef4444" />
+                  <Text className="text-red-600 text-2xl font-bold">{outOfStockItems.length}</Text>
+                  <Text className="text-red-600 text-xs font-medium text-center">Out of Stock</Text>
+                </View>
+              </View>
+            </View>
+
+            {/* Header for list */}
+            <View className="flex-row items-center justify-between py-4">
+              <View>
+                <Text className="text-xl font-bold text-gray-900">Inventory Items</Text>
+                <Text className="text-sm text-gray-500">{inventory?.length || 0} total items</Text>
+              </View>
+            
+            </View>
+
+            {/* Inventory list */}
+            <View className="space-y-4 gap-4">
+              {inventory?.map((item) => (
+                <Link key={item.id} href={`/inventory/${item.id}` as any} asChild>
+                  <InventoryItemCard item={item} />
+                </Link>
+              ))}
+            </View>
           </View>
         </View>
       </ScrollView>
     </View>
-  );
+  )
 }
-
-function InventoryStatCard({ 
-  icon: IconComponent, 
-  label, 
-  value, 
-  variant = 'default' 
-}: { 
-  icon: React.ElementType; 
-  label: string; 
-  value: string; 
-  variant?: 'default' | 'warning' | 'danger';
-}) {
-  const { colors } = useColorScheme();
-  
-  const variantColors = {
-    default: colors.primary,
-    warning: '#f59e0b',
-    danger: '#ef4444'
-  };
-
-  return (
-    <View className="flex-1 bg-card p-4 rounded-xl space-y-2">
-      <View 
-        style={{ backgroundColor: `${variantColors[variant]}20` }}
-        className="w-8 h-8 rounded-full items-center justify-center"
-      >
-        <IconComponent size={16} color={variantColors[variant]} />
-      </View>
-      <View>
-        <Text variant="title3">{value}</Text>
-        <Text variant="footnote" color="tertiary">{label}</Text>
-      </View>
-    </View>
-  );
-}
-
 
 function InventoryItemCard({ item }: { item: Inventory }) {
-  const { colors } = useColorScheme();
+  const statusConfig = {
+    in_stock: { color: "#10b981", label: "In Stock", icon: CheckCircle },
+    low_stock: { color: "#f59e0b", label: "Low Stock", icon: AlertTriangle },
+    out_of_stock: { color: "#ef4444", label: "Out of Stock", icon: XCircle },
+  }
 
-  const statusColors = {
-    in_stock: colors.primary,
-    low_stock: '#f59e0b',
-    out_of_stock: '#ef4444'
-  };
+  const config = statusConfig[item.status]
+  const StatusIcon = config.icon
 
-const statusIcon = {
-  in_stock: CheckCircle,
-  low_stock: AlertTriangle,
-  out_of_stock: XCircle
-};
-const StatusIconComponent = statusIcon[item.status];
   return (
-    <View className="bg-card p-4 rounded-xl space-y-3">
-      <View className="flex-row items-center justify-between">
-        <Text variant="heading">{item.name}</Text>
-        <View 
-          style={{ backgroundColor: `${statusColors[item.status]}20` }}
-          className="py-1 px-3 rounded-full flex-row items-center gap-1"
-        >
-        <StatusIconComponent size={12} color={statusColors[item.status]} />
-          <Text style={{ color: statusColors[item.status] }}>
-            {item.status.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}
-          </Text>
+ 
+      <View className="bg-white/80 rounded-2xl overflow-hidden shadow-xl border border-gray-200">
+        {/* Header */}
+        <View className="relative bg-gradient-to-br from-gray-200 to-gray-100 p-4">
+          <View className="absolute top-3 left-3">
+            <View className="bg-white/70 backdrop-blur-sm rounded-full px-3 py-1 border border-gray-300 flex-row items-center space-x-1">
+              <StatusIcon size={12} color={config.color} />
+              <Text className="text-gray-700 text-xs font-medium">{config.label}</Text>
+            </View>
+          </View>
+          <View className="mt-8">
+            <Text className="text-gray-900 text-lg font-semibold">{item.name}</Text>
+
+          </View>
         </View>
-      </View>
-      
-      <View className="space-y-2">
-        <View className="flex-row justify-between">
-          <Text color="tertiary">SKU: {item.sku}</Text>
-          <Text color="tertiary">Stock: {item.stock}</Text>
+
+        {/* Content */}
+        <View className="p-4 space-y-3">
+          {/* Stock and Price */}
+          <View className="space-y-2">
+            <View className="flex-row justify-between items-center">
+              <Text className="text-gray-500 text-sm">Current Stock</Text>
+              <Text className="text-gray-900 font-semibold">{item.stock} units</Text>
+            </View>
+
+            {item.srp ? (
+              <View className="flex-row justify-between items-center">
+                <View className="flex-row items-center space-x-1">
+                  <Package size={12} color="#6b7280" />
+                  <Text className="text-gray-500 text-sm">Retail Price</Text>
+                </View>
+                <Text className="text-green-600 font-bold text-lg">₱{item.srp.toFixed(2)}</Text>
+              </View>
+            ) : (
+              <View className="border border-gray-300 rounded-lg p-4 bg-gray-50">
+                <View className="items-center space-y-2">
+                  <Text className="text-gray-700 text-sm font-medium text-center">No retail price set</Text>
+                  <Text className="text-gray-500 text-xs text-center">Update inventory to set pricing</Text>
+                </View>
+              </View>
+            )}
+          </View>
+
+          {/* Stock Level Indicator */}
+          <View className="flex-row justify-between items-center">
+            <Text className="text-gray-500 text-sm">Stock Level</Text>
+            <View className="flex-row items-center space-x-2">
+              <View
+                className={`w-2 h-2 rounded-full ${
+                  item.status === "in_stock"
+                    ? "bg-green-400"
+                    : item.status === "low_stock"
+                      ? "bg-yellow-400"
+                      : "bg-red-400"
+                }`}
+              />
+              <Text
+                className={`font-medium ${
+                  item.status === "in_stock"
+                    ? "text-green-600"
+                    : item.status === "low_stock"
+                      ? "text-yellow-600"
+                      : "text-red-600"
+                }`}
+              >
+                {item.status === "in_stock" ? "Good" : item.status === "low_stock" ? "Low" : "Empty"}
+              </Text>
+            </View>
+          </View>
+
+          {/* Footer */}
+          <View className="flex-row justify-between items-center pt-2 border-t border-gray-100">
+            <Text className="text-gray-400 text-xs">Updated {new Date(item.last_updated).toLocaleDateString()}</Text>
+            <Link href={`/inventory/update` as any} asChild>
+              <Pressable className="bg-gradient-to-r from-violet-100 to-purple-100 border border-violet-200 rounded-lg px-3 py-1 flex-row items-center space-x-1">
+                <Edit size={12} color="#6d28d9" />
+                <Text className="text-violet-700 text-xs font-medium">Update</Text>
+              </Pressable>
+            </Link>
+          </View>
         </View>
-        
-        {item.srp && (
-          <Text color="tertiary">SRP: ₱{item.srp.toFixed(2)}</Text>
-        )}
-        
-        <ProgressIndicator
-          className="h-2 bg-muted rounded-full overflow-hidden"
-          value={item.stock}
-          max={100}
-        />
       </View>
 
-      <View className="flex-row justify-between items-center">
-        <Text variant="footnote" color="tertiary">
-          Last updated: {new Date(item.last_updated).toLocaleDateString()}
-        </Text>
-        <Button variant="secondary" size="sm">
-          <Text>Update Stock</Text>
-          <Edit size={16} color={colors.primary} />
-        </Button>
-      </View>
-    </View>
-  );
+  )
 }

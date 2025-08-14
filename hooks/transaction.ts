@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { supabase } from '~/lib/auth';
 import { Transaction } from '~/types/database';
-import { supabase } from '~/utils/supabase';
+
 
 
 export const useGetTransactions = () =>

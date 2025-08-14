@@ -1,14 +1,15 @@
 import { useState } from 'react';
-import { View } from 'react-native';
-import { useForm, Controller } from 'react-hook-form';
-import { z } from 'zod';
+import { View, TextInput, TouchableOpacity, ScrollView, KeyboardAvoidingView, Platform } from 'react-native';
+import { Controller, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+import { LinearGradient } from 'expo-linear-gradient';
+import { ShieldCheck, Sparkles, Mail, Lock, Eye, EyeOff, Loader2 } from 'lucide-react-native';
 import { Text } from '~/components/nativewindui/Text';
 import { Button } from '~/components/nativewindui/Button';
-
-import { Link } from 'expo-router';
-import { supabase } from '~/utils/supabase';
-import { TextInput } from 'react-native-gesture-handler';
+import { Link, router } from 'expo-router';
+import { supabase } from '~/lib/auth';
+import Animated, { useSharedValue, withSpring, useAnimatedStyle } from 'react-native-reanimated';
 
 const signInSchema = z.object({
   email: z.string().email('Invalid email address'),
@@ -19,10 +20,13 @@ type SignInForm = z.infer<typeof signInSchema>;
 
 export default function SignInScreen() {
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const scale = useSharedValue(1);
+
   const { control, handleSubmit } = useForm<SignInForm>({
     resolver: zodResolver(signInSchema),
+    defaultValues: { email: '', password: '' },
   });
-
 
   const onSubmit = async (data: SignInForm) => {
     try {
@@ -31,72 +35,153 @@ export default function SignInScreen() {
         email: data.email,
         password: data.password,
       });
-
       if (error) throw error;
-      // Handle successful sign in - will be handled by auth state change
+     router.push('/index' as any)
     } catch (error) {
       console.error('Error signing in:', error);
-      // Handle error
     } finally {
       setLoading(false);
     }
   };
 
+  const formAnimatedStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: scale.value }],
+  }));
+
   return (
-    <View className="flex-1 justify-center p-4 bg-background">
-      <View className="space-y-6">
-        <Text variant="largeTitle" className="text-center mb-6">Sign In</Text>
-        
-        <Controller
-          control={control}
-          name="email"
-          render={({ field: { onChange, value }, fieldState: { error } }) => (
-            <View className="space-y-2">
-              <Text>Email</Text>
-             <TextInput
-                className="border border-gray-300 rounded-lg p-2"
-                onChangeText={onChange}
-                value={value}
-                keyboardType="email-address"
-                autoCapitalize="none"
-              />
-              {error && <Text className="text-red-500">{error.message}</Text>}
+    <KeyboardAvoidingView
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      className="flex-1 bg-black"
+    >
+      {/* Background gradients */}
+      <LinearGradient
+        colors={['#0f0f1f', '#1a0b2e', '#000']}
+        className="absolute inset-0"
+      />
+      <View className="absolute top-20 left-10 w-72 h-72 bg-purple-800/20 rounded-full blur-3xl" />
+      <View className="absolute bottom-20 right-10 w-72 h-72 bg-pink-600/20 rounded-full blur-3xl" />
+
+      <ScrollView
+        contentContainerStyle={{ flexGrow: 1, justifyContent: 'center', padding: 20 }}
+        keyboardShouldPersistTaps="handled"
+      >
+        {/* Header */}
+        <View className="items-center space-y-6 mb-10">
+          <View className="relative">
+            <View className="absolute -inset-4 bg-gradient-to-r from-violet-500/30 to-purple-500/30 rounded-2xl blur-xl" />
+            <View className="relative h-16 w-16 bg-gradient-to-br from-violet-700 to-purple-700 rounded-2xl items-center justify-center border border-violet-500/30">
+              <ShieldCheck size={28} color="white" />
             </View>
-          )}
-        />
+          </View>
 
-        <Controller
-          control={control}
-          name="password"
-          render={({ field: { onChange, value }, fieldState: { error } }) => (
-            <View className="space-y-2">
-              <Text>Password</Text>
-             <TextInput
-                className="border border-gray-300 rounded-lg p-2"
-                onChangeText={onChange}
-                value={value}
-                secureTextEntry
-              />
-              {error && <Text className="text-red-500">{error.message}</Text>}
-            </View>
-          )}
-        />
+          <View className="flex-row items-center space-x-2">
+            <Sparkles size={18} color="#a78bfa" />
+            <Text className="text-3xl font-bold text-white">Welcome Back</Text>
+            <Sparkles size={18} color="#d8b4fe" />
+          </View>
 
-        <Button
-          onPress={handleSubmit(onSubmit)}
-          disabled={loading}
-          className="mt-4"
-        >
-          {loading ? 'Signing in...' : 'Sign In'}
-        </Button>
+          <Text className="text-lg text-slate-400 text-center">
+            Sign in to your account and continue your journey
+          </Text>
 
-        <View className="flex-row justify-center mt-4">
-          <Text className="text-muted-foreground">Don't have an account? </Text>
-          <Link href="/auth/signup">
-            <Text className="text-primary">Sign Up</Text>
-          </Link>
+          <View className="flex-row space-x-1">
+            <Text className="text-slate-500">{`Don't`} have an account?</Text>
+            <Link href="/auth/signup">
+              <Text className="text-violet-400">Create one now</Text>
+            </Link>
+          </View>
         </View>
-      </View>
-    </View>
+
+        {/* Form */}
+        <Animated.View
+          style={formAnimatedStyle}
+          onTouchStart={() => { scale.value = withSpring(1.03); }}
+          onTouchEnd={() => { scale.value = withSpring(1); }}
+          className="bg-black/40 p-5 rounded-2xl border border-violet-500/20 space-y-5"
+        >
+          {/* Email */}
+          <Controller
+            control={control}
+            name="email"
+            render={({ field: { onChange, value }, fieldState: { error } }) => (
+              <View className="space-y-1">
+                <View className="relative">
+                  <Mail size={18} color="#9ca3af" style={{ position: 'absolute', left: 10, top: 14 }} />
+                  <TextInput
+                    placeholder="Enter your email"
+                    placeholderTextColor="#9ca3af"
+                    className="bg-black/50 border border-gray-700 rounded-lg pl-10 pr-3 py-3 text-white"
+                    onChangeText={onChange}
+                    value={value}
+                    keyboardType="email-address"
+                    autoCapitalize="none"
+                  />
+                </View>
+                {error && <Text className="text-red-500 text-sm">{error.message}</Text>}
+              </View>
+            )}
+          />
+
+          {/* Password */}
+          <Controller
+            control={control}
+            name="password"
+            render={({ field: { onChange, value }, fieldState: { error } }) => (
+              <View className="space-y-1">
+                <View className="relative">
+                  <Lock size={18} color="#9ca3af" style={{ position: 'absolute', left: 10, top: 14 }} />
+                  <TextInput
+                    placeholder="Enter your password"
+                    placeholderTextColor="#9ca3af"
+                    className="bg-black/50 border border-gray-700 rounded-lg pl-10 pr-10 py-3 text-white"
+                    onChangeText={onChange}
+                    value={value}
+                    secureTextEntry={!showPassword}
+                  />
+                  <TouchableOpacity
+                    onPress={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-3"
+                  >
+                    {showPassword ? (
+                      <EyeOff size={18} color="#9ca3af" />
+                    ) : (
+                      <Eye size={18} color="#9ca3af" />
+                    )}
+                  </TouchableOpacity>
+                </View>
+                {error && <Text className="text-red-500 text-sm">{error.message}</Text>}
+              </View>
+            )}
+          />
+
+          {/* Forgot password */}
+          <TouchableOpacity className="self-end">
+            <Text className="text-violet-400 text-sm">Forgot password?</Text>
+          </TouchableOpacity>
+
+          {/* Sign In Button */}
+          <Button
+            variant="primary"
+            onPress={handleSubmit(onSubmit)}
+            disabled={loading}
+            className="w-full bg-violet-500 rounded-lg py-3"
+          >
+            {loading ? (
+              <View className="flex-row items-center justify-center">
+                <Loader2 size={18} color="white" className="mr-2" />
+                <Text className="text-white">Signing in...</Text>
+              </View>
+            ) : (
+              <Text className="text-white font-semibold">Sign In</Text>
+            )}
+          </Button>
+        </Animated.View>
+
+        {/* Footer security info */}
+        <View className="items-center mt-6 space-y-2">
+          <Text className="text-xs text-slate-500">Secure Authentication • Protected by SSL • Privacy First</Text>
+        </View>
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 }

@@ -1,21 +1,23 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { createClient } from '@supabase/supabase-js';
+import { createClient, processLock } from '@supabase/supabase-js';
 import { createContext, useContext, useEffect, useState } from 'react';
 import { useRouter, useSegments } from 'expo-router';
-import Constants from 'expo-constants';
+
 import type { Session } from '@supabase/supabase-js';
 
-const supabaseUrl = Constants.expoConfig?.extra?.supabaseUrl as string;
-const supabaseAnonKey = Constants.expoConfig?.extra?.supabaseAnonKey as string;
-
-export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
-  auth: {
-    storage: AsyncStorage,
-    autoRefreshToken: true,
-    persistSession: true,
-    detectSessionInUrl: false,
-  },
-});
+export const supabase = createClient(
+  process.env.EXPO_PUBLIC_SUPABASE_URL!,
+  process.env.EXPO_PUBLIC_SUPABASE_KEY!,
+  {
+    auth: {
+      storage: AsyncStorage,
+      autoRefreshToken: true,
+      persistSession: true,
+      detectSessionInUrl: false,
+      lock: processLock,
+    },
+  })
 
 interface AuthContextProps {
   session: Session | null;
@@ -34,21 +36,21 @@ interface AuthContextProps {
 const AuthContext = createContext<AuthContextProps | undefined>(undefined);
 
 // This hook will protect the route access based on user authentication
-function useProtectedRoute(session: Session | null) {
+function useProtectedRoute(session: Session | null, isLoading: boolean) {
   const segments = useSegments();
   const router = useRouter();
 
-  useEffect(() => {
-    const inAuthGroup = segments[0] === '(auth)';
+ useEffect(() => {
+    if (isLoading) return; // ✅ wait until we know the session
+
+    const inAuthGroup = segments[0] === 'auth';
 
     if (!session && !inAuthGroup) {
-      // Redirect to the sign-in page if not authenticated
-      router.replace('/(auth)/signin');
+      router.replace('/auth/signin');
     } else if (session && inAuthGroup) {
-      // Redirect to the home page if authenticated
-      router.replace('/(app)');
+      router.replace('/app' as any);
     }
-  }, [session, segments]);
+  }, [session, isLoading, segments]);
 }
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
@@ -56,7 +58,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
 
-  useProtectedRoute(session);
+  useProtectedRoute(session, isLoading);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -123,7 +125,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const signOut = async () => {
     const { error } = await supabase.auth.signOut();
     if (error) throw error;
-    router.replace('/(auth)/signin');
+    router.replace('/auth/signin');
   };
 
   const value = {
