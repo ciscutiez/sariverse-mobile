@@ -1,13 +1,13 @@
-import { View, ScrollView, RefreshControl, Pressable, Image, TextInput, Text } from "react-native"
-import { useState, useMemo } from "react"
-import { Link } from "expo-router"
-import { LinearGradient } from "expo-linear-gradient"
-import { Package, Plus, ExternalLink, Package2, Pencil, Search } from "lucide-react-native"
+import { View, ScrollView, RefreshControl, Pressable, Image, TextInput, Text } from 'react-native';
+import { useState, useMemo } from 'react';
+import { Link } from 'expo-router';
+import { LinearGradient } from 'expo-linear-gradient';
+import { Package, Plus, ExternalLink, Package2, Pencil, Search } from 'lucide-react-native';
 
-import { useGetProducts } from "~/hooks/product"
-import type { ProductWithInventory } from "~/types/database"
-import { Button } from "~/components/nativewindui/Button"
-import { FilterChip } from "~/components/filter-chip"
+import { useGetProducts } from '~/hooks/product';
+import type { ProductWithInventory } from '~/types/database';
+import { Button } from '~/components/nativewindui/Button';
+import { FilterChip } from '~/components/filter-chip';
 
 function ProductCard({ product }: { product: ProductWithInventory }) {
   return (
@@ -15,7 +15,11 @@ function ProductCard({ product }: { product: ProductWithInventory }) {
       {/* Header image area */}
       <View className="relative h-48 bg-slate-800">
         {product.product_image ? (
-          <Image source={{ uri: product.product_image }} className="h-full w-full" style={{ resizeMode: "cover" }} />
+          <Image
+            source={{ uri: product.product_image }}
+            className="h-full w-full"
+            style={{ resizeMode: 'cover' }}
+          />
         ) : (
           <View className="flex h-full w-full items-center justify-center">
             <Package size={48} color="#94a3b8" />
@@ -29,7 +33,7 @@ function ProductCard({ product }: { product: ProductWithInventory }) {
         </View>
       </View>
       {/* Content */}
-      <View className="space-y-3 gap-4 p-4">
+      <View className="gap-4 space-y-3 p-4">
         {/* Product name */}
         <View className="space-y-1">
           <Text className="text-lg font-semibold leading-tight text-gray-900">{product.name}</Text>
@@ -45,20 +49,25 @@ function ProductCard({ product }: { product: ProductWithInventory }) {
               <View className="flex-row items-center space-x-1">
                 <Text className="text-sm text-gray-500">Retail Price</Text>
               </View>
-              <Text className="text-lg font-bold text-green-600">₱{product.inventory[0].srp.toFixed(2)}</Text>
+              <Text className="text-lg font-bold text-green-600">
+                ₱{product.inventory[0].srp.toFixed(2)}
+              </Text>
             </View>
           ) : (
             <LinearGradient
-              colors={["rgba(229, 231, 235, 0.8)", "rgba(243, 244, 246, 0.6)"]}
-              className="rounded-lg border border-gray-300 p-4"
-            >
+              colors={['rgba(229, 231, 235, 0.8)', 'rgba(243, 244, 246, 0.6)']}
+              className="rounded-lg border border-gray-300 p-4">
               <View className="items-center space-y-3">
                 <View className="rounded-full bg-gray-200/60 p-2">
                   <ExternalLink size={20} color="#6b7280" />
                 </View>
                 <View className="items-center space-y-1">
-                  <Text className="text-center text-sm font-medium text-gray-700">No retail price and stock set</Text>
-                  <Text className="text-center text-xs text-gray-500">Set up inventory to start selling</Text>
+                  <Text className="text-center text-sm font-medium text-gray-700">
+                    No retail price and stock set
+                  </Text>
+                  <Text className="text-center text-xs text-gray-500">
+                    Set up inventory to start selling
+                  </Text>
                 </View>
                 <Link href="/inventory" asChild>
                   <Pressable className="flex-row items-center space-x-2 rounded-lg border border-violet-200 bg-gradient-to-r from-violet-100 to-purple-100 px-4 py-2">
@@ -78,21 +87,20 @@ function ProductCard({ product }: { product: ProductWithInventory }) {
               <View
                 className={`h-2 w-2 rounded-full ${
                   (product.inventory?.[0]?.stock || 0) > 10
-                    ? "bg-green-400"
+                    ? 'bg-green-400'
                     : (product.inventory?.[0]?.stock || 0) > 0
-                      ? "bg-yellow-400"
-                      : "bg-red-400"
+                      ? 'bg-yellow-400'
+                      : 'bg-red-400'
                 }`}
               />
               <Text
                 className={`font-medium ${
                   (product.inventory?.[0]?.stock || 0) > 10
-                    ? "text-green-600"
+                    ? 'text-green-600'
                     : (product.inventory?.[0]?.stock || 0) > 0
-                      ? "text-yellow-600"
-                      : "text-red-600"
-                }`}
-              >
+                      ? 'text-yellow-600'
+                      : 'text-red-600'
+                }`}>
                 {product.inventory?.[0]?.stock || 0} units
               </Text>
             </View>
@@ -101,70 +109,70 @@ function ProductCard({ product }: { product: ProductWithInventory }) {
         <Link className="" href={`/products/${product.id}/update` as any} asChild>
           <Button variant="black">
             <Pencil size={14} />
-            <Text className="text-sm text-white font-medium">Edit Product</Text>
+            <Text className="text-sm font-medium text-white">Edit Product</Text>
           </Button>
         </Link>
       </View>
     </View>
-  )
+  );
 }
 
 /* ---------------- Main Screen ---------------- */
 export default function ProductsScreen() {
-  const [refreshing, setRefreshing] = useState(false)
-  const [searchQuery, setSearchQuery] = useState("")
-  const [selectedCategories, setSelectedCategories] = useState<string[]>([])
-  const { data: products, refetch } = useGetProducts()
+  const [refreshing, setRefreshing] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+  const { data: products, refetch } = useGetProducts();
 
   const onRefresh = async () => {
-    setRefreshing(true)
-    await refetch()
-    setRefreshing(false)
-  }
+    setRefreshing(true);
+    await refetch();
+    setRefreshing(false);
+  };
 
   const availableCategories = useMemo(() => {
-    if (!products) return []
-    const categories = [...new Set(products.map((product) => product.category))]
-    return categories.filter(Boolean)
-  }, [products])
+    if (!products) return [];
+    const categories = [...new Set(products.map((product) => product.category))];
+    return categories.filter(Boolean);
+  }, [products]);
 
   const filteredProducts = useMemo(() => {
-    if (!products) return []
+    if (!products) return [];
 
     return products.filter((product) => {
       const matchesSearch =
         product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        product.category.toLowerCase().includes(searchQuery.toLowerCase())
+        product.category.toLowerCase().includes(searchQuery.toLowerCase());
 
-      const matchesCategory = selectedCategories.length === 0 || selectedCategories.includes(product.category)
+      const matchesCategory =
+        selectedCategories.length === 0 || selectedCategories.includes(product.category);
 
-      return matchesSearch && matchesCategory
-    })
-  }, [products, searchQuery, selectedCategories])
+      return matchesSearch && matchesCategory;
+    });
+  }, [products, searchQuery, selectedCategories]);
 
   const toggleCategory = (category: string) => {
     setSelectedCategories((prev) =>
-      prev.includes(category) ? prev.filter((c) => c !== category) : [...prev, category],
-    )
-  }
+      prev.includes(category) ? prev.filter((c) => c !== category) : [...prev, category]
+    );
+  };
 
   const clearAllFilters = () => {
-    setSelectedCategories([])
-    setSearchQuery("")
-  }
+    setSelectedCategories([]);
+    setSearchQuery('');
+  };
 
-  const totalProducts = products?.length || 0
-  const filteredCount = filteredProducts.length
+  const totalProducts = products?.length || 0;
+  const filteredCount = filteredProducts.length;
 
   return (
     <View className="flex-1 bg-gray-50">
       {/* Header */}
       <LinearGradient
-        colors={["#8B5CF6", "#A855F7", "#C084FC"]}
+        colors={['#8B5CF6', '#A855F7', '#C084FC']}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
-        className="px-6 pb-8 pt-16"
-      >
+        className="px-6 pb-8 pt-16">
         <View className="mb-6 flex-row items-center justify-between">
           <View>
             <Text className="text-2xl font-bold text-white">Products</Text>
@@ -186,8 +194,7 @@ export default function ProductsScreen() {
       {/* Body */}
       <ScrollView
         className="-mt-4 flex-1"
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
-      >
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}>
         <View className="min-h-full rounded-t-3xl bg-white">
           <View className="gap-4 space-y-6 p-6">
             <View className="relative">
@@ -204,7 +211,7 @@ export default function ProductsScreen() {
             </View>
 
             {availableCategories.length > 0 && (
-              <View className="space-y-3 gap-3">
+              <View className="gap-3 space-y-3">
                 <View className="flex-row items-center justify-between">
                   <Text className="text-sm font-medium text-gray-700">Filter by Category</Text>
                   {selectedCategories.length > 0 && (
@@ -221,7 +228,11 @@ export default function ProductsScreen() {
                         label={category}
                         isSelected={selectedCategories.includes(category)}
                         onPress={() => toggleCategory(category)}
-                        onRemove={selectedCategories.includes(category) ? () => toggleCategory(category) : undefined}
+                        onRemove={
+                          selectedCategories.includes(category)
+                            ? () => toggleCategory(category)
+                            : undefined
+                        }
                       />
                     ))}
                   </View>
@@ -233,7 +244,9 @@ export default function ProductsScreen() {
             <View className="flex-row items-center justify-between py-4">
               <View>
                 <Text className="text-xl font-bold text-gray-900">
-                  {searchQuery || selectedCategories.length > 0 ? "Filtered Products" : "Recent Products"}
+                  {searchQuery || selectedCategories.length > 0
+                    ? 'Filtered Products'
+                    : 'Recent Products'}
                 </Text>
                 <Text className="text-sm text-gray-500">
                   {searchQuery || selectedCategories.length > 0
@@ -241,7 +254,7 @@ export default function ProductsScreen() {
                     : `${totalProducts} total products`}
                 </Text>
               </View>
-              <Link href={"/products/add" as any} asChild>
+              <Link href={'/products/add' as any} asChild>
                 <Button variant="black">
                   <Plus size={16} color="white" />
                   <Text className="font-semibold text-white">Add Product</Text>
@@ -254,20 +267,23 @@ export default function ProductsScreen() {
               {filteredProducts.length > 0 ? (
                 filteredProducts.map((product) => (
                   <Link key={product.id} href={`/products/${product.id}` as any} asChild>
-                      <Pressable>
-                    <ProductCard product={product} /></Pressable>
+                    <Pressable>
+                      <ProductCard product={product} />
+                    </Pressable>
                   </Link>
                 ))
               ) : (
                 <View className="items-center py-12">
                   <Package size={48} color="#9ca3af" />
                   <Text className="mt-4 text-lg font-medium text-gray-500">
-                    {searchQuery || selectedCategories.length > 0 ? "No products found" : "No products yet"}
+                    {searchQuery || selectedCategories.length > 0
+                      ? 'No products found'
+                      : 'No products yet'}
                   </Text>
                   <Text className="mt-1 text-sm text-gray-400">
                     {searchQuery || selectedCategories.length > 0
-                      ? "Try adjusting your search or filters"
-                      : "Add your first product to get started"}
+                      ? 'Try adjusting your search or filters'
+                      : 'Add your first product to get started'}
                   </Text>
                 </View>
               )}
@@ -276,5 +292,5 @@ export default function ProductsScreen() {
         </View>
       </ScrollView>
     </View>
-  )
+  );
 }
