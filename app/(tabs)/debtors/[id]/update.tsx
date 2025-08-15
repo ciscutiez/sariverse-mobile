@@ -191,7 +191,7 @@ export default function UpdateDebtorScreen() {
           {/* Submit */}
           <View className="pb-8 pt-6">
             <Button
-              className="flex-row items-center justify-center gap-2 bg-purple-600"
+              className="flex-row items-center justify-center gap-2 bg-black"
               onPress={handleSubmit}
               disabled={loading}>
               <Edit3 size={20} color="white" />

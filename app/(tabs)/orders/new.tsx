@@ -316,15 +316,10 @@ export default function NewOrderScreen() {
 
             {/* Submit Button */}
             <View className="pt-8">
-              <LinearGradient
-                colors={["#8B5CF6", "#A855F7"]}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 0 }}
-                className="rounded-2xl"
-              >
+            
                 <Button
-                  variant="primary"
-                  className="bg-transparent border-0 py-4"
+                  variant="black"
+                  className="rounded-full py-4"
                   onPress={handleSubmit}
                   disabled={createOrder.isPending}
                 >
@@ -344,7 +339,7 @@ export default function NewOrderScreen() {
                     </View>
                   )}
                 </Button>
-              </LinearGradient>
+          
             </View>
           </View>
         </View>

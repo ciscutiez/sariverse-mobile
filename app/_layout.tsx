@@ -4,11 +4,11 @@ import { ThemeProvider as NavThemeProvider } from '@react-navigation/native';
 import { Icon } from '@roninoss/icons';
 import { ActionSheetProvider } from '@expo/react-native-action-sheet';
 import { BottomSheetModalProvider } from '@gorhom/bottom-sheet';
-import { Link, Stack } from 'expo-router';
+import { Link,  Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { Pressable, View } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import { ThemeToggle } from '~/components/ThemeToggle';
+
 import { cn } from '~/lib/cn';
 import { useColorScheme, useInitialAndroidBarSync } from '~/lib/useColorScheme';
 import { NAV_THEME } from '~/theme';
@@ -18,11 +18,18 @@ import { AppProviders } from '~/lib/query-client';
 
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
+
 export { ErrorBoundary } from 'expo-router';
 
 export default function RootLayout() {
   useInitialAndroidBarSync();
   const { colorScheme, isDarkColorScheme } = useColorScheme();
+// const { session, isLoading } = useAuth();
+
+//   if (isLoading) return null; 
+
+//   if (!session) return <Redirect href="/auth/signin" />;
+
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
@@ -34,12 +41,14 @@ export default function RootLayout() {
                 <StatusBar style={isDarkColorScheme ? 'light' : 'dark'} />
                 {/* <AuthGate> */}
                 <Stack screenOptions={SCREEN_OPTIONS}>
-                  <Stack.Screen name="index" options={INDEX_OPTIONS} />
-                  <Stack.Screen name="modal" options={MODAL_OPTIONS} />
+                  {/* <Stack.Screen name="index" options={INDEX_OPTIONS} /> */}
+                  {/* <Stack.Screen name="modal" options={MODAL_OPTIONS} /> */}
                   <Stack.Screen name="auth/signin" options={{ headerShown: false }} />
                     <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
                     <Stack.Screen name='transactions' options={{ headerShown: false }} />
                     <Stack.Screen name='analytics' options={{ headerShown: false }} />
+                    <Stack.Screen name='profile' options={{ headerShown: false}} />
+                    {/* <Stack.Screen name='settings' options={{headerShown: false}} />  */}
                 </Stack>
                 {/* </AuthGate> */}
               </NavThemeProvider>
@@ -76,14 +85,14 @@ const SCREEN_OPTIONS = {
 
 const INDEX_OPTIONS = {
   headerLargeTitle: true,
-  title: 'Dshboard',
+  title: 'Dashboard',
   headerRight: () => <SettingsIcon />,
 } as const;
 
 function SettingsIcon() {
   const { colors } = useColorScheme();
   return (
-    <Link href="/modal" asChild>
+    <Link href="/settings" asChild>
       <Pressable className="opacity-80">
         {({ pressed }) => (
           <View className={cn(pressed ? 'opacity-50' : 'opacity-90')}>
@@ -99,5 +108,5 @@ const MODAL_OPTIONS = {
   presentation: 'modal',
   animation: 'fade_from_bottom',
   title: 'Settings',
-  headerRight: () => <ThemeToggle />,
+  // headerRight: () => <ThemeToggle />,
 } as const;

@@ -101,7 +101,7 @@ function ProductCard({ product }: { product: ProductWithInventory }) {
         <Link className="" href={`/products/${product.id}/update` as any} asChild>
           <Button variant="black">
             <Pencil size={14} />
-            <Text className="text-sm font-medium">Edit Product</Text>
+            <Text className="text-sm text-white font-medium">Edit Product</Text>
           </Button>
         </Link>
       </View>
@@ -254,7 +254,8 @@ export default function ProductsScreen() {
               {filteredProducts.length > 0 ? (
                 filteredProducts.map((product) => (
                   <Link key={product.id} href={`/products/${product.id}` as any} asChild>
-                    <ProductCard product={product} />
+                      <Pressable>
+                    <ProductCard product={product} /></Pressable>
                   </Link>
                 ))
               ) : (

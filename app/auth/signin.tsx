@@ -1,15 +1,23 @@
 import { useState } from 'react';
-import { View, TextInput, TouchableOpacity, ScrollView, KeyboardAvoidingView, Platform } from 'react-native';
+import {
+  View,
+  TextInput,
+  TouchableOpacity,
+  ScrollView,
+  KeyboardAvoidingView,
+  Platform,
+} from 'react-native';
 import { Controller, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { LinearGradient } from 'expo-linear-gradient';
-import { ShieldCheck, Sparkles, Mail, Lock, Eye, EyeOff, Loader2 } from 'lucide-react-native';
+import { Sparkles, Mail, Lock, Eye, EyeOff, Loader2 } from 'lucide-react-native';
 import { Text } from '~/components/nativewindui/Text';
 import { Button } from '~/components/nativewindui/Button';
-import { Link, router } from 'expo-router';
+import { router } from 'expo-router';
 import { supabase } from '~/lib/auth';
 import Animated, { useSharedValue, withSpring, useAnimatedStyle } from 'react-native-reanimated';
+import SariverseLogo from '~/components/sariverse-logo';
 
 const signInSchema = z.object({
   email: z.string().email('Invalid email address'),
@@ -36,7 +44,7 @@ export default function SignInScreen() {
         password: data.password,
       });
       if (error) throw error;
-     router.push('/index' as any)
+    router.push('/(tabs)/products');
     } catch (error) {
       console.error('Error signing in:', error);
     } finally {
@@ -51,27 +59,19 @@ export default function SignInScreen() {
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-      className="flex-1 bg-black"
-    >
+      className="flex-1 bg-black">
       {/* Background gradients */}
-      <LinearGradient
-        colors={['#0f0f1f', '#1a0b2e', '#000']}
-        className="absolute inset-0"
-      />
-      <View className="absolute top-20 left-10 w-72 h-72 bg-purple-800/20 rounded-full blur-3xl" />
-      <View className="absolute bottom-20 right-10 w-72 h-72 bg-pink-600/20 rounded-full blur-3xl" />
+      <LinearGradient colors={['#0f0f1f', '#1a0b2e', '#000']} className="absolute inset-0" />
+      <View className="absolute left-10 top-20 h-72 w-72 rounded-full bg-purple-800/20 blur-3xl" />
+      <View className="absolute bottom-20 right-10 h-72 w-72 rounded-full bg-pink-600/20 blur-3xl" />
 
       <ScrollView
         contentContainerStyle={{ flexGrow: 1, justifyContent: 'center', padding: 20 }}
-        keyboardShouldPersistTaps="handled"
-      >
+        keyboardShouldPersistTaps="handled">
         {/* Header */}
-        <View className="items-center space-y-6 mb-10">
+        <View className="mb-10 items-center space-y-6">
           <View className="relative">
-            <View className="absolute -inset-4 bg-gradient-to-r from-violet-500/30 to-purple-500/30 rounded-2xl blur-xl" />
-            <View className="relative h-16 w-16 bg-gradient-to-br from-violet-700 to-purple-700 rounded-2xl items-center justify-center border border-violet-500/30">
-              <ShieldCheck size={28} color="white" />
-            </View>
+            <SariverseLogo size={80} />
           </View>
 
           <View className="flex-row items-center space-x-2">
@@ -80,25 +80,21 @@ export default function SignInScreen() {
             <Sparkles size={18} color="#d8b4fe" />
           </View>
 
-          <Text className="text-lg text-slate-400 text-center">
-            Sign in to your account and continue your journey
+          <Text className="text-center text-lg text-slate-400">
+            Sign in to your Sariverse account
           </Text>
-
-          <View className="flex-row space-x-1">
-            <Text className="text-slate-500">{`Don't`} have an account?</Text>
-            <Link href="/auth/signup">
-              <Text className="text-violet-400">Create one now</Text>
-            </Link>
-          </View>
         </View>
 
         {/* Form */}
         <Animated.View
           style={formAnimatedStyle}
-          onTouchStart={() => { scale.value = withSpring(1.03); }}
-          onTouchEnd={() => { scale.value = withSpring(1); }}
-          className="bg-black/40 p-5 rounded-2xl border border-violet-500/20 space-y-5"
-        >
+          onTouchStart={() => {
+            scale.value = withSpring(1.03);
+          }}
+          onTouchEnd={() => {
+            scale.value = withSpring(1);
+          }}
+          className="gap-4 space-y-5 rounded-2xl border border-violet-500/20 bg-black/40 p-5">
           {/* Email */}
           <Controller
             control={control}
@@ -106,18 +102,22 @@ export default function SignInScreen() {
             render={({ field: { onChange, value }, fieldState: { error } }) => (
               <View className="space-y-1">
                 <View className="relative">
-                  <Mail size={18} color="#9ca3af" style={{ position: 'absolute', left: 10, top: 14 }} />
+                  <Mail
+                    size={18}
+                    color="#9ca3af"
+                    style={{ position: 'absolute', left: 10, top: 14 }}
+                  />
                   <TextInput
                     placeholder="Enter your email"
                     placeholderTextColor="#9ca3af"
-                    className="bg-black/50 border border-gray-700 rounded-lg pl-10 pr-3 py-3 text-white"
+                    className="rounded-lg border border-gray-700 bg-black/50 py-3 pl-10 pr-3 text-white"
                     onChangeText={onChange}
                     value={value}
                     keyboardType="email-address"
                     autoCapitalize="none"
                   />
                 </View>
-                {error && <Text className="text-red-500 text-sm">{error.message}</Text>}
+                {error && <Text className="text-sm text-red-500">{error.message}</Text>}
               </View>
             )}
           />
@@ -129,19 +129,22 @@ export default function SignInScreen() {
             render={({ field: { onChange, value }, fieldState: { error } }) => (
               <View className="space-y-1">
                 <View className="relative">
-                  <Lock size={18} color="#9ca3af" style={{ position: 'absolute', left: 10, top: 14 }} />
+                  <Lock
+                    size={18}
+                    color="#9ca3af"
+                    style={{ position: 'absolute', left: 10, top: 14 }}
+                  />
                   <TextInput
                     placeholder="Enter your password"
                     placeholderTextColor="#9ca3af"
-                    className="bg-black/50 border border-gray-700 rounded-lg pl-10 pr-10 py-3 text-white"
+                    className="rounded-lg border border-gray-700 bg-black/50 py-3 pl-10 pr-10 text-white"
                     onChangeText={onChange}
                     value={value}
                     secureTextEntry={!showPassword}
                   />
                   <TouchableOpacity
                     onPress={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-3"
-                  >
+                    className="absolute right-3 top-3">
                     {showPassword ? (
                       <EyeOff size={18} color="#9ca3af" />
                     ) : (
@@ -149,14 +152,14 @@ export default function SignInScreen() {
                     )}
                   </TouchableOpacity>
                 </View>
-                {error && <Text className="text-red-500 text-sm">{error.message}</Text>}
+                {error && <Text className="text-sm text-red-500">{error.message}</Text>}
               </View>
             )}
           />
 
           {/* Forgot password */}
           <TouchableOpacity className="self-end">
-            <Text className="text-violet-400 text-sm">Forgot password?</Text>
+            <Text className="text-sm text-violet-400">Forgot password?</Text>
           </TouchableOpacity>
 
           {/* Sign In Button */}
@@ -164,22 +167,23 @@ export default function SignInScreen() {
             variant="primary"
             onPress={handleSubmit(onSubmit)}
             disabled={loading}
-            className="w-full bg-violet-500 rounded-lg py-3"
-          >
+            className="w-full rounded-lg bg-violet-500 py-3">
             {loading ? (
               <View className="flex-row items-center justify-center">
                 <Loader2 size={18} color="white" className="mr-2" />
                 <Text className="text-white">Signing in...</Text>
               </View>
             ) : (
-              <Text className="text-white font-semibold">Sign In</Text>
+              <Text className="font-semibold text-white">Sign In</Text>
             )}
           </Button>
         </Animated.View>
 
         {/* Footer security info */}
-        <View className="items-center mt-6 space-y-2">
-          <Text className="text-xs text-slate-500">Secure Authentication • Protected by SSL • Privacy First</Text>
+        <View className="mt-6 items-center space-y-2">
+          <Text className="text-xs text-slate-500">
+            Secure Authentication • Protected by SSL • Privacy First
+          </Text>
         </View>
       </ScrollView>
     </KeyboardAvoidingView>

@@ -19,6 +19,8 @@ import { router } from 'expo-router';
 import * as ImagePicker from 'expo-image-picker';
 import { Text } from '~/components/nativewindui/Text';
 import { useCreateProduct } from '~/hooks/product';
+import { Button } from '~/components/nativewindui/Button';
+import { ArrowLeft } from 'lucide-react-native';
 
 type FormData = {
   name: string;
@@ -138,9 +140,13 @@ export default function AddProductScreen() {
       {/* Header */}
       <LinearGradient colors={['#8b5cf6', '#a855f7', '#c084fc']} className="px-5 pb-5 pt-16">
         <View className="flex-row items-center justify-between">
-          <TouchableOpacity onPress={() => router.back()}>
-            <Ionicons name="arrow-back" size={24} color="white" />
-          </TouchableOpacity>
+        <Button
+            variant="secondary"
+            className="bg-white/20 border-0 rounded-full w-10 h-10 p-0"
+            onPress={() => router.back()}
+          >
+            <ArrowLeft size={20} color="white" />
+          </Button>
           <Text className="flex-1 text-center text-xl font-bold text-white">Add New Product</Text>
           <View className="w-6" />
         </View>

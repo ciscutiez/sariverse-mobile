@@ -79,7 +79,7 @@ export default function UpdateInventoryScreen() {
   };
 
   return (
-    <View className="flex-1 bg-background">
+    <View className="flex-1 bg-gray-50">
       <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
         {/* Header */}
         <LinearGradient
@@ -105,7 +105,7 @@ export default function UpdateInventoryScreen() {
         <View className="-mt-4 px-6">
           {/* Form Section */}
           <View
-            className="mb-6 rounded-2xl bg-card p-6"
+            className="mb-6 rounded-2xl bg-gray-50 p-6"
             style={{
               shadowColor: '#000',
               shadowOffset: { width: 0, height: 2 },
@@ -117,24 +117,24 @@ export default function UpdateInventoryScreen() {
               <View className="mr-3 rounded-full bg-blue-500/20 p-2">
                 <Calculator size={20} color="#3b82f6" />
               </View>
-              <Text className="text-lg font-semibold text-foreground">Stock Information</Text>
+              <Text className="text-lg font-semibold text-black">Stock Information</Text>
             </View>
 
             {/* Quantity Input */}
             <View className="mb-4">
-              <Text className="mb-2 text-sm font-medium text-muted-foreground">Quantity</Text>
+              <Text className="mb-2 text-sm font-medium text-gray-500">Quantity</Text>
               <TextInput
                 value={quantity}
                 onChangeText={setQuantity}
                 placeholder="Enter quantity"
                 keyboardType="numeric"
-                className="bg-muted/50 rounded-xl border border-border px-4 py-3 text-foreground"
+                className="bg-muted/50 rounded-xl border border-border px-4 py-3 text-black"
               />
             </View>
 
             {/* SRP Input */}
             <View className="mb-4">
-              <Text className="mb-2 text-sm font-medium text-muted-foreground">
+              <Text className="mb-2 text-sm font-medium text-gray-500">
                 Retail Price (SRP)
               </Text>
               <TextInput
@@ -142,7 +142,7 @@ export default function UpdateInventoryScreen() {
                 onChangeText={setSrp}
                 placeholder="0.00"
                 keyboardType="numeric"
-                className="bg-muted/50 rounded-xl border border-border px-4 py-3 text-foreground"
+                className="bg-muted/50 rounded-xl border border-border px-4 py-3 text-black"
               />
             </View>
 
@@ -217,16 +217,16 @@ export default function UpdateInventoryScreen() {
           {/* Action Buttons */}
           <View className="flex-row justify-center gap-3 pb-8">
             <Button
-              variant="tonal"
+              variant="danger"
               onPress={() => router.back()}
-              className="flex-1"
+              className="flex-1 py-4 px-10"
               disabled={isLoading}>
               <Text>Cancel</Text>
             </Button>
 
-            <Button onPress={handleUpdate} disabled={isLoading} className="flex-1">
+            <Button variant='black' onPress={handleUpdate} disabled={isLoading}   className="flex-1 py-4 px-10">
              
-                <Save size={16} color="white" />
+             
                 <Text className="ml-2 font-semibold text-white">
                   {isLoading ? 'Updating...' : 'Update'}
                 </Text>
