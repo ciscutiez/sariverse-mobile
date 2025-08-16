@@ -1,9 +1,16 @@
-import { Stack } from 'expo-router';
+import { Redirect, Stack } from 'expo-router';
+import { useAuth } from '~/lib/auth';
 import { useColorScheme } from '~/lib/useColorScheme';
 
 export default function DebtorsLayout() {
   const { colors } = useColorScheme();
+ const { session, isLoading } = useAuth();
 
+  if (isLoading) return null; 
+
+  if (!session) {
+    return <Redirect href="/auth/signin" />;
+  }
   return (
     <Stack
       screenOptions={{

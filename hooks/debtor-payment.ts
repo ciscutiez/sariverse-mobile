@@ -13,7 +13,7 @@ interface SettlementParams {
 interface SettlementResult {
   success: boolean;
   order_id: number;
-  total: number;
+total_paid: number;
   error?: string;
   items_count: number;
   settlement_date: string;
@@ -40,7 +40,7 @@ export const useSettleDebtor = () => {
         // Call the settlement RPC function
         const { data, error } = await supabase.rpc('settle_debtor_payment', {
           p_debtor_id: debtorId,
-          p_payment_method: paymentMethod,
+         p_payment_method: "cash",
           p_customer_name: customerName,
           p_profile_id: profileId,
           p_partial_amount: paymentAmount,

@@ -1,4 +1,4 @@
-import { Receipt, Tag, Boxes, CreditCard, CogIcon, Cog } from 'lucide-react-native';
+import { Receipt, Tag, Boxes, CreditCard, Cog } from 'lucide-react-native';
 import { Tabs, Redirect } from 'expo-router';
 import { useColorScheme } from '~/lib/useColorScheme';
 
@@ -9,7 +9,7 @@ export default function TabsLayout() {
   const { session, isLoading } = useAuth();
 
   // Loading state while checking session
-  if (isLoading) return null; // Or a loading spinner component
+  if (isLoading) return null; 
 
   // If no session, redirect to sign-in
   if (!session) {
@@ -35,6 +35,7 @@ export default function TabsLayout() {
         name="products"
         options={{
           title: 'Products',
+            animation: 'none',
           tabBarIcon: ({ color, size }) => <Tag size={size} color={color} />,
           headerShown: false,
         }}
@@ -43,6 +44,7 @@ export default function TabsLayout() {
         name="inventory"
         options={{
           title: 'Inventory',
+            animation: 'none',
           tabBarIcon: ({ color, size }) => <Boxes size={size} color={color} />,
           headerShown: false,
         }}
@@ -51,6 +53,7 @@ export default function TabsLayout() {
         name="debtors"
         options={{
           title: 'Debtors',
+            animation: 'none',
           tabBarIcon: ({ color, size }) => <CreditCard size={size} color={color} />,
           headerShown: false,
         }}
@@ -59,6 +62,7 @@ export default function TabsLayout() {
         name="orders"
         options={{
           title: 'Orders',
+            animation: 'none',
           tabBarIcon: ({ color, size }) => <Receipt size={size} color={color} />,
           headerShown: false,
         }}
@@ -67,6 +71,7 @@ export default function TabsLayout() {
         name="settings"
         options={{
           title: 'Settings',
+            animation: 'none',
           tabBarIcon: ({ color, size }) => <Cog size={size} color={color} />,
           headerShown: false,
         }}

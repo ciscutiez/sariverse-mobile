@@ -187,7 +187,7 @@ export default function UpdateProductScreen() {
       <LinearGradient colors={['#8b5cf6', '#a855f7', '#c084fc']} className="px-5 pb-5 pt-16">
         <View className="flex-row items-center justify-between">
          <Button
-            variant="secondary"
+            variant="black"
             className="bg-white/20 border-0 rounded-full w-10 h-10 p-0"
             onPress={() => router.back()}
           >
@@ -371,7 +371,7 @@ export default function UpdateProductScreen() {
             </TouchableOpacity>
 
             <TouchableOpacity
-              className="flex-1 flex-row items-center justify-center rounded-xl bg-violet-600 p-4"
+              className="flex-1 flex-row items-center justify-center rounded-xl bg-black p-4"
               onPress={handleSubmit(onSubmit)}
               disabled={updateProduct.isPending}>
               {updateProduct.isPending && (

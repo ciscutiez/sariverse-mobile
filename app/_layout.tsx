@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import '../global.css';
 import 'expo-dev-client';
 import { ThemeProvider as NavThemeProvider } from '@react-navigation/native';
@@ -23,7 +24,7 @@ export { ErrorBoundary } from 'expo-router';
 
 export default function RootLayout() {
   useInitialAndroidBarSync();
-  const { colorScheme, isDarkColorScheme } = useColorScheme();
+  // const { colorScheme, isDarkColorScheme } = useColorScheme();
 // const { session, isLoading } = useAuth();
 
 //   if (isLoading) return null; 
@@ -37,8 +38,8 @@ export default function RootLayout() {
         <AppProviders>
           <BottomSheetModalProvider>
             <ActionSheetProvider>
-              <NavThemeProvider value={NAV_THEME[colorScheme]}>
-                <StatusBar style={isDarkColorScheme ? 'light' : 'dark'} />
+              {/* <NavThemeProvider value={NAV_THEME[colorScheme]}>
+                <StatusBar style={isDarkColorScheme ? 'light' : 'dark'} /> */}
                 {/* <AuthGate> */}
                 <Stack screenOptions={SCREEN_OPTIONS}>
                   {/* <Stack.Screen name="index" options={INDEX_OPTIONS} /> */}
@@ -51,7 +52,7 @@ export default function RootLayout() {
                     {/* <Stack.Screen name='settings' options={{headerShown: false}} />  */}
                 </Stack>
                 {/* </AuthGate> */}
-              </NavThemeProvider>
+              {/* </NavThemeProvider> */}
             </ActionSheetProvider>
           </BottomSheetModalProvider>
         </AppProviders>
@@ -83,30 +84,30 @@ const SCREEN_OPTIONS = {
   animation: 'ios_from_right',
 } as const;
 
-const INDEX_OPTIONS = {
-  headerLargeTitle: true,
-  title: 'Dashboard',
-  headerRight: () => <SettingsIcon />,
-} as const;
+// const INDEX_OPTIONS = {
+//   headerLargeTitle: true,
+//   title: 'Dashboard',
+//   headerRight: () => <SettingsIcon />,
+// } as const;
 
-function SettingsIcon() {
-  const { colors } = useColorScheme();
-  return (
-    <Link href="/settings" asChild>
-      <Pressable className="opacity-80">
-        {({ pressed }) => (
-          <View className={cn(pressed ? 'opacity-50' : 'opacity-90')}>
-            <Icon name="cog-outline" color={colors.foreground} />
-          </View>
-        )}
-      </Pressable>
-    </Link>
-  );
-}
+// function SettingsIcon() {
+//   const { colors } = useColorScheme();
+//   return (
+//     <Link href="/settings" asChild>
+//       <Pressable className="opacity-80">
+//         {({ pressed }) => (
+//           <View className={cn(pressed ? 'opacity-50' : 'opacity-90')}>
+//             <Icon name="cog-outline" color={colors.foreground} />
+//           </View>
+//         )}
+//       </Pressable>
+//     </Link>
+//   );
+// }
 
-const MODAL_OPTIONS = {
-  presentation: 'modal',
-  animation: 'fade_from_bottom',
-  title: 'Settings',
-  // headerRight: () => <ThemeToggle />,
-} as const;
+// const MODAL_OPTIONS = {
+//   presentation: 'modal',
+//   animation: 'fade_from_bottom',
+//   title: 'Settings',
+//   // headerRight: () => <ThemeToggle />,
+// } as const;

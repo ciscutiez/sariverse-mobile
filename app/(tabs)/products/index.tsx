@@ -1,3 +1,4 @@
+// products.tsx
 import { View, ScrollView, RefreshControl, Pressable, Image, TextInput, Text } from 'react-native';
 import { useState, useMemo } from 'react';
 import { Link } from 'expo-router';
@@ -26,23 +27,29 @@ function ProductCard({ product }: { product: ProductWithInventory }) {
           </View>
         )}
         {/* Category */}
-        <View className="absolute left-3 top-3">
-          <View className="rounded-full border border-gray-300 bg-white/70 px-3 py-1 backdrop-blur-sm">
-            <Text className="text-xs font-medium text-gray-700">{product.category}</Text>
+        {product.category ? (
+          <View className="absolute left-3 top-3">
+            <View className="rounded-full border border-gray-300 bg-white/70 px-3 py-1 backdrop-blur-sm">
+              <Text className="text-xs font-medium text-gray-700">{product.category}</Text>
+            </View>
           </View>
-        </View>
+        ) : null}
       </View>
+
       {/* Content */}
       <View className="gap-4 space-y-3 p-4">
         {/* Product name */}
         <View className="space-y-1">
-          <Text className="text-lg font-semibold leading-tight text-gray-900">{product.name}</Text>
+          <Text className="text-lg font-semibold leading-tight text-gray-900">
+            {product.name || 'Unnamed Product'}
+          </Text>
         </View>
+
         {/* Prices */}
         <View className="space-y-2">
           <View className="flex-row items-center justify-between">
             <Text className="text-sm text-gray-500">Base Price</Text>
-            <Text className="font-semibold text-gray-900">₱{product.price.toFixed(2)}</Text>
+            <Text className="font-semibold text-gray-900">₱{product.price?.toFixed(2) ?? '0.00'}</Text>
           </View>
           {product.inventory?.[0]?.srp ? (
             <View className="flex-row items-center justify-between">
@@ -79,34 +86,36 @@ function ProductCard({ product }: { product: ProductWithInventory }) {
             </LinearGradient>
           )}
         </View>
+
         {/* Stock */}
-        {product.inventory?.[0]?.stock && (
+        {product.inventory?.[0]?.stock != null && (
           <View className="flex-row items-center justify-between">
             <Text className="text-sm text-gray-500">Stock</Text>
             <View className="flex-row items-center space-x-2">
               <View
                 className={`h-2 w-2 rounded-full ${
-                  (product.inventory?.[0]?.stock || 0) > 10
+                  product.inventory[0].stock > 10
                     ? 'bg-green-400'
-                    : (product.inventory?.[0]?.stock || 0) > 0
+                    : product.inventory[0].stock > 0
                       ? 'bg-yellow-400'
                       : 'bg-red-400'
                 }`}
               />
               <Text
                 className={`font-medium ${
-                  (product.inventory?.[0]?.stock || 0) > 10
+                  product.inventory[0].stock > 10
                     ? 'text-green-600'
-                    : (product.inventory?.[0]?.stock || 0) > 0
+                    : product.inventory[0].stock > 0
                       ? 'text-yellow-600'
                       : 'text-red-600'
                 }`}>
-                {product.inventory?.[0]?.stock || 0} units
+                {String(product.inventory[0].stock)} units
               </Text>
             </View>
           </View>
         )}
-        <Link className="" href={`/products/${product.id}/update` as any} asChild>
+
+        <Link href={`/products/${String(product.id)}/update`} asChild>
           <Button variant="black">
             <Pencil size={14} />
             <Text className="text-sm font-medium text-white">Edit Product</Text>
@@ -125,9 +134,14 @@ export default function ProductsScreen() {
   const { data: products, refetch } = useGetProducts();
 
   const onRefresh = async () => {
-    setRefreshing(true);
-    await refetch();
-    setRefreshing(false);
+    try {
+      setRefreshing(true);
+      await refetch();
+    } catch (err) {
+      console.error('Refresh failed:', err);
+    } finally {
+      setRefreshing(false);
+    }
   };
 
   const availableCategories = useMemo(() => {
@@ -138,15 +152,13 @@ export default function ProductsScreen() {
 
   const filteredProducts = useMemo(() => {
     if (!products) return [];
-
     return products.filter((product) => {
+      const name = (product.name ?? '').toLowerCase();
+      const category = (product.category ?? '').toLowerCase();
       const matchesSearch =
-        product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        product.category.toLowerCase().includes(searchQuery.toLowerCase());
-
+        name.includes(searchQuery.toLowerCase()) || category.includes(searchQuery.toLowerCase());
       const matchesCategory =
-        selectedCategories.length === 0 || selectedCategories.includes(product.category);
-
+        selectedCategories.length === 0 || selectedCategories.includes(product.category ?? '');
       return matchesSearch && matchesCategory;
     });
   }, [products, searchQuery, selectedCategories]);
@@ -187,7 +199,7 @@ export default function ProductsScreen() {
             <Package2 size={16} color="white" />
             <Text className="font-semibold text-white">Total Products</Text>
           </View>
-          <Text className="text-3xl font-bold text-white">{totalProducts.toString()}</Text>
+          <Text className="text-3xl font-bold text-white">{String(totalProducts)}</Text>
         </View>
       </LinearGradient>
 
@@ -224,7 +236,7 @@ export default function ProductsScreen() {
                   <View className="flex-row gap-2 px-1">
                     {availableCategories.map((category) => (
                       <FilterChip
-                        key={category}
+                        key={String(category)}
                         label={category}
                         isSelected={selectedCategories.includes(category)}
                         onPress={() => toggleCategory(category)}
@@ -254,7 +266,7 @@ export default function ProductsScreen() {
                     : `${totalProducts} total products`}
                 </Text>
               </View>
-              <Link href={'/products/add' as any} asChild>
+              <Link href="/products/add" asChild>
                 <Button variant="black">
                   <Plus size={16} color="white" />
                   <Text className="font-semibold text-white">Add Product</Text>
@@ -266,7 +278,7 @@ export default function ProductsScreen() {
             <View className="gap-4 space-y-4">
               {filteredProducts.length > 0 ? (
                 filteredProducts.map((product) => (
-                  <Link key={product.id} href={`/products/${product.id}` as any} asChild>
+                  <Link key={String(product.id)} href={`/products/${String(product.id)}` as any} asChild>
                     <Pressable>
                       <ProductCard product={product} />
                     </Pressable>
